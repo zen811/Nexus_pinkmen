@@ -15,18 +15,12 @@ interface Dish {
 
 interface MessMenuProps {
   onBack: () => void;
+  openModal: (id: string, title: string, content: React.ReactNode) => void;
 }
 
-/** 
- * IMPORTANT: To use your own sheet:
- * 1. Open Google Sheet
- * 2. File -> Share -> Publish to web
- * 3. Select "Entire Document" and "Comma-separated values (.csv)"
- * 4. Paste that URL here.
- */
 const MESS_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ3xJFl76PqRk5V2ZKYFLns4b_Q4heCTOAvihAlCB8d_iYxM2mt97eXhJraZwMHqMHo6eNBcw9ehuNv/pub?output=csv';
 
-const MessMenu: React.FC<MessMenuProps> = ({ onBack }) => {
+const MessMenu: React.FC<MessMenuProps> = ({ onBack, openModal }) => {
   const [activeMeal, setActiveMeal] = useState('Lunch');
   const [activeFilter, setActiveFilter] = useState('All Items');
   const [dishes, setDishes] = useState<Dish[]>([]);
@@ -34,22 +28,20 @@ const MessMenu: React.FC<MessMenuProps> = ({ onBack }) => {
   const [error, setError] = useState<string | null>(null);
 
   const meals = ['Breakfast', 'Lunch', 'Dinner'];
-  const filters = ['All Items', 'Veg Only', 'High Protein', 'Low Carb', 'Gluten-Free'];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const response = await fetch(MESS_SHEET_CSV_URL);
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('Cloud Sync Failed');
         const csvText = await response.text();
         const parsedDishes = parseCsv(csvText);
         setDishes(parsedDishes);
         setLoading(false);
       } catch (err) {
         console.error("Failed to fetch mess data:", err);
-        setError("Unable to sync with Google Sheets. Using offline cache...");
-        // Fallback mock data if fetch fails
+        setError("Unable to sync. Using default campus menu.");
         setLoading(false);
       }
     };
@@ -60,44 +52,81 @@ const MessMenu: React.FC<MessMenuProps> = ({ onBack }) => {
   const parseCsv = (csv: string): Dish[] => {
     const lines = csv.split(/\r?\n/);
     const result: Dish[] = [];
-
-    // Skip header row
     for (let i = 1; i < lines.length; i++) {
       if (!lines[i].trim()) continue;
-      
-      // Robust CSV parsing to handle quoted fields with commas
       const matches = lines[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
       if (!matches || matches.length < 5) continue;
-
       const clean = (val: string) => val.replace(/^"|"$/g, '').trim();
-
       result.push({
         id: `dish-${i}`,
         name: clean(matches[0]),
         kcal: clean(matches[1]),
         type: clean(matches[2]),
-        // Column 4: Tags (comma separated inside the cell)
         tags: clean(matches[3]).split(',').map(s => s.trim()).filter(s => s),
-        // Column 5: Veg?
         veg: ['TRUE', 'YES', 'VEG', '1'].includes(clean(matches[4]).toUpperCase()),
-        // Column 6: Image (Optional)
         image: matches[5] ? clean(matches[5]) : `https://picsum.photos/seed/${i}/300/200`,
-        // Column 7: Meal (Optional, defaults to Lunch)
         meal: matches[6] ? clean(matches[6]) : 'Lunch'
       });
     }
     return result;
   };
 
-  const filteredDishes = dishes.filter(dish => {
-    const mealMatch = dish.meal.toLowerCase() === activeMeal.toLowerCase();
-    const filterMatch = activeFilter === 'All Items' || 
-                       (activeFilter === 'Veg Only' && dish.veg) ||
-                       (activeFilter === 'High Protein' && dish.type.toLowerCase().includes('protein')) ||
-                       (activeFilter === 'Low Carb' && dish.type.toLowerCase().includes('carb')) ||
-                       (activeFilter === 'Gluten-Free' && dish.tags.some(t => t.toLowerCase().includes('gluten')));
-    return mealMatch && filterMatch;
-  });
+  const handleCheckIn = () => {
+    openModal('mess_checkin', 'Mess Check-In & Analytics', (
+      <div className="space-y-8">
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
+            <h4 className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-1">Crowd Status</h4>
+            <p className="text-lg font-black text-slate-900">70% Capacity</p>
+            <p className="text-xs text-slate-500 mt-1 italic">Peak predicted at 1:30 PM</p>
+          </div>
+          <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+            <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Student Rating</h4>
+            <div className="flex items-center gap-1">
+              <span className="text-lg font-black text-slate-900">4.8</span>
+              <StarIcon className="w-4 h-4 text-yellow-500 fill-current" />
+            </div>
+            <p className="text-xs text-slate-500 mt-1">Based on 240+ reviews today</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Nutritional Tracking & Allergen Warnings</h4>
+          <div className="space-y-3">
+             <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                <span className="text-sm font-medium text-slate-700">Daily Calorie Goal</span>
+                <span className="text-sm font-black text-primary">650 / 2200 kcal</span>
+             </div>
+             <div className="flex gap-2">
+                <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded-full uppercase border border-red-100">Contains Dairy</span>
+                <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded-full uppercase border border-red-100">Contains Gluten</span>
+             </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Popularity Trends</h4>
+          <div className="p-4 bg-slate-900 rounded-2xl text-white">
+             <p className="text-xs font-bold text-white/60 mb-2 uppercase">#1 Trending Dish</p>
+             <h5 className="text-lg font-black tracking-tight">Butter Chicken Special</h5>
+             <p className="text-xs text-white/50 mt-1">Claimed by 85 students in the last 15 minutes.</p>
+          </div>
+        </div>
+
+        <div className="p-6 bg-gradient-to-br from-primary to-blue-600 rounded-[2rem] text-white">
+           <h4 className="text-sm font-black mb-1 uppercase tracking-widest">Personalized Recommendation</h4>
+           <p className="text-xs text-white/80 leading-relaxed mb-4">"Based on your 2400kcal goal and high-protein preference, we recommend a double serving of Dal Tadka with whole-wheat Roti."</p>
+           <button className="w-full py-2 bg-white text-primary font-black text-xs rounded-xl shadow-lg shadow-black/5 uppercase">Log Meal</button>
+        </div>
+
+        <button className="w-full py-4 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02]">
+           CONFIRM CHECK-IN
+        </button>
+      </div>
+    ));
+  };
+
+  const filteredDishes = dishes.filter(dish => dish.meal.toLowerCase() === activeMeal.toLowerCase());
 
   return (
     <div className="bg-slate-50 min-h-screen pb-20">
@@ -108,22 +137,15 @@ const MessMenu: React.FC<MessMenuProps> = ({ onBack }) => {
               <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             </button>
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary rounded-xl text-white">
-                <Restaurant className="w-5 h-5" />
-              </div>
-              <div>
-                <h1 className="text-xl font-extrabold text-slate-900 tracking-tight leading-none">NEXUS Mess Menu</h1>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <div className={`w-1.5 h-1.5 ${error ? 'bg-orange-500' : 'bg-green-500'} rounded-full animate-pulse`}></div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {loading ? 'Syncing...' : error ? 'Offline Mode' : 'Live Sync Active'}
-                  </span>
-                </div>
-              </div>
+              <div className="p-2 bg-primary rounded-xl text-white"><Restaurant className="w-5 h-5" /></div>
+              <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">NEXUS Mess</h1>
             </div>
           </div>
-          <button className="p-2 text-slate-400 hover:text-primary transition-colors">
-            <Notifications className="w-6 h-6" />
+          <button 
+            onClick={handleCheckIn}
+            className="px-6 py-2.5 bg-primary text-white font-black text-xs rounded-xl shadow-lg shadow-primary/20 hover:scale-105 transition-all uppercase tracking-widest"
+          >
+            Check In
           </button>
         </div>
       </div>
@@ -145,33 +167,9 @@ const MessMenu: React.FC<MessMenuProps> = ({ onBack }) => {
               ))}
             </div>
 
-            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-              {filters.map(filter => (
-                <button
-                  key={filter}
-                  onClick={() => setActiveFilter(filter)}
-                  className={`whitespace-nowrap px-6 py-2.5 rounded-full text-xs font-bold transition-all border ${
-                    activeFilter === filter 
-                    ? 'bg-primary text-white border-primary shadow-lg shadow-primary/30' 
-                    : 'bg-white text-slate-500 border-slate-200 hover:border-primary/50 hover:text-primary'
-                  }`}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {loading ? (
-                [1, 2, 3, 4].map(i => (
-                  <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 h-32 animate-pulse flex gap-5">
-                    <div className="w-24 h-full bg-slate-100 rounded-2xl"></div>
-                    <div className="flex-1 space-y-3">
-                      <div className="h-4 bg-slate-100 rounded w-3/4"></div>
-                      <div className="h-3 bg-slate-100 rounded w-1/2"></div>
-                    </div>
-                  </div>
-                ))
+                [1, 2, 3, 4].map(i => <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 h-32 animate-pulse"></div>)
               ) : filteredDishes.length > 0 ? (
                 filteredDishes.map(dish => (
                   <div key={dish.id} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex gap-5 group cursor-pointer">
@@ -197,32 +195,26 @@ const MessMenu: React.FC<MessMenuProps> = ({ onBack }) => {
                   </div>
                 ))
               ) : (
-                <div className="col-span-full py-20 text-center">
-                  <p className="text-slate-400 font-bold">No dishes found in the cloud for {activeMeal}.</p>
-                </div>
+                <div className="col-span-full py-20 text-center text-slate-400 font-bold italic">No cloud menu data found.</div>
               )}
             </div>
           </div>
-
           <aside className="space-y-8">
             <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
-              <h3 className="text-xl font-bold text-slate-900 mb-8">Dining Insights</h3>
-              <div className="space-y-6">
-                <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100 flex items-center gap-4">
-                  <Schedule className="w-8 h-8 text-primary" />
-                  <div>
-                    <p className="text-xl font-black text-slate-900">01:15 PM</p>
-                    <p className="text-[10px] text-slate-500 font-bold uppercase">Best Time to Visit</p>
-                  </div>
-                </div>
-                <div className="bg-slate-50 p-8 rounded-[2rem] text-center border border-slate-100">
-                  <p className="font-bold text-slate-800 mb-6 text-sm">How was your meal today?</p>
-                  <div className="flex justify-center gap-4 text-2xl">
-                    {['😞', '😐', '😊', '🤩'].map(emoji => (
-                      <button key={emoji} className="hover:scale-125 transition-transform">{emoji}</button>
-                    ))}
-                  </div>
-                </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-8">Meal Timing</h3>
+              <div className="space-y-4">
+                 <div className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
+                    <span className="text-xs font-bold text-slate-400 uppercase">Breakfast</span>
+                    <span className="text-sm font-black text-slate-900">07:30 - 09:30</span>
+                 </div>
+                 <div className="flex justify-between items-center p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                    <span className="text-xs font-bold text-primary uppercase">Lunch</span>
+                    <span className="text-sm font-black text-slate-900">12:30 - 14:30</span>
+                 </div>
+                 <div className="flex justify-between items-center p-4 bg-slate-50 rounded-2xl">
+                    <span className="text-xs font-bold text-slate-400 uppercase">Dinner</span>
+                    <span className="text-sm font-black text-slate-900">19:30 - 21:30</span>
+                 </div>
               </div>
             </div>
           </aside>

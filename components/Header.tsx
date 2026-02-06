@@ -160,9 +160,7 @@ const Header: React.FC<HeaderProps> = ({ currentView, onViewChange, isLoggedIn, 
               </button>
             )}
             
-            <button className="lg:hidden p-2 text-slate-600">
-              <Menu className="w-6 h-6" />
-            </button>
+            {/* Hamburger icon removed from here */}
           </div>
         </div>
       </div>

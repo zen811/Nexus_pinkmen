@@ -37,15 +37,15 @@ const App: React.FC = () => {
       case 'login':
         return <Login onLogin={() => { setIsLoggedIn(true); setCurrentView('dashboard'); }} />;
       case 'mess':
-        return <MessMenu onBack={() => setCurrentView('dashboard')} />;
+        return <MessMenu onBack={() => setCurrentView('dashboard')} openModal={openGlobalModal} />;
       case 'mail_summarizer':
         return <MailSummarizer onBack={() => setCurrentView('dashboard')} />;
       case 'travel':
         return <TravelHub onBack={() => setCurrentView('dashboard')} />;
       case 'utility_status':
-        return <UtilityStatus onBack={() => setCurrentView('dashboard')} />;
+        return <UtilityStatus onBack={() => setCurrentView('dashboard')} openModal={openGlobalModal} />;
       case 'academics':
-        return <AcademicCockpit onBack={() => setCurrentView('dashboard')} />;
+        return <AcademicCockpit onBack={() => setCurrentView('dashboard')} openModal={openGlobalModal} />;
       case 'services':
         return <ServicesPortal onBack={() => setCurrentView('dashboard')} />;
       case 'explore':

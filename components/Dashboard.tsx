@@ -202,18 +202,18 @@ const Dashboard: React.FC<DashboardProps> = ({ openModal, setView }) => {
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* GPA Summary */}
+            {/* CGPA Summary */}
             <div 
-              onClick={() => handleCardClick('gpa', 'GPA Analysis', 'Your performance has improved by 4% compared to the previous semester.')}
+              onClick={() => handleCardClick('gpa', 'CGPA Analysis', 'Your performance has improved by 4% compared to the previous semester.')}
               className="bg-white rounded-3xl border border-slate-200 p-8 flex flex-col hover:border-primary/30 transition-all cursor-pointer shadow-sm hover:shadow-md"
             >
               <div className="flex items-center justify-between mb-8">
-                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Current GPA</span>
-                <span className="text-xs px-3 py-1 bg-green-100 text-green-600 rounded-full font-bold">+0.15 this sem</span>
+                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Current CGPA</span>
+                <span className="text-xs px-3 py-1 bg-green-100 text-green-600 rounded-full font-bold">+0.32 this sem</span>
               </div>
               <div className="flex items-baseline gap-2 mb-10">
-                <span className="text-7xl font-extrabold text-slate-900 tracking-tighter">3.85</span>
-                <span className="text-2xl text-slate-300 font-medium">/ 4.0</span>
+                <span className="text-7xl font-extrabold text-slate-900 tracking-tighter">9.12</span>
+                <span className="text-2xl text-slate-300 font-medium">/ 10.0</span>
               </div>
               <div className="mt-auto space-y-4">
                 <div className="flex justify-between items-center text-sm">
@@ -231,9 +231,9 @@ const Dashboard: React.FC<DashboardProps> = ({ openModal, setView }) => {
               <h3 className="font-bold text-slate-900 mb-6 text-lg">Recent Grades</h3>
               <div className="space-y-5">
                 {[
-                  { id: 'g1', sub: 'Algorithms Lab', grade: 'A', meta: 'Quiz #4 • Yesterday', color: 'bg-indigo-50 text-indigo-600' },
-                  { id: 'g2', sub: 'Economics', grade: 'A-', meta: 'Midterm Paper • Oct 12', color: 'bg-green-50 text-green-600' },
-                  { id: 'g3', sub: 'UI Design', grade: 'B+', meta: 'Portfolio Review • Oct 10', color: 'bg-yellow-50 text-yellow-600' },
+                  { id: 'g1', sub: 'Algorithms Lab', grade: '9.0', meta: 'Quiz #4 • Yesterday', color: 'bg-indigo-50 text-indigo-600' },
+                  { id: 'g2', sub: 'Economics', grade: '8.5', meta: 'Midterm Paper • Oct 12', color: 'bg-green-50 text-green-600' },
+                  { id: 'g3', sub: 'UI Design', grade: '8.0', meta: 'Portfolio Review • Oct 10', color: 'bg-yellow-50 text-yellow-600' },
                 ].map((g) => (
                   <div 
                     key={g.id}
