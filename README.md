@@ -1,38 +1,20 @@
-Project Nexus: The Ultimate Campus Super-App
-Project Nexus is a unified digital ecosystem designed to streamline campus life by integrating real-time information, academic management, and peer-to-peer exchange into a single, AI-powered platform.
+<div align="center">
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+</div>
 
-🚀 Core Pillars
-1. The Daily Pulse
-Live Mess Menu: Real-time updates on daily meals with nutritional tracking.
+# Run and deploy your AI Studio app
 
-AI Mail Summarizer: Uses Gemini AI to condense long campus emails into actionable bullet points.
+This contains everything you need to run your app locally.
 
-2. The Academic Cockpit
-Smart Timetable: A dynamic schedule that reflects class timings and lab sessions.
+View your app in AI Studio: https://ai.studio/apps/drive/1Uq1Zb20eESx7vkZU0Ome9_ka63_BJJmB
 
-LMS Lite: Centralized hub for tracking assignments and academic deadlines.
+## Run Locally
 
-3. The Student Exchange
-Marketplace: A secure platform for students to buy and sell used items.
-
-Cab-Pool Coordinator: Facilitates travel sharing for students heading to similar destinations.
-
-4. The Explorer’s Guide
-Nearby Hub: Discovery tool for local attractions and utilities in the Ropar/Rupnagar area.
-
-🛠️ Tech Stack
-Frontend: HTML5, CSS3, JavaScript (Responsive Design)
-
-Backend: Node.js, Express.js
-
-Database: MongoDB Atlas (NoSQL)
-
-Real-Time: Socket.io (WebSockets for instant updates)
-
-AI Integration: Gemini 1.5 Flash (via Google AI Studio)
+**Prerequisites:**  Node.js
 
 
-
-link to open:
-
-https://effulgent-genie-2844df.netlify.app/
+1. Install dependencies:
+   `npm install`
+2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+3. Run the app:
+   `npm run dev`
